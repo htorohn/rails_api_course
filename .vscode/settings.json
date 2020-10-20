@@ -1,0 +1,4 @@
+{
+    "ruby.useBundler": true,
+    "ruby.useLanguageServer": true
+}
