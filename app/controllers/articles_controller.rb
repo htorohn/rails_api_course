@@ -7,6 +7,7 @@ class ArticlesController < ApplicationController
   end
 
   def show
+    render json: Article.find(params[:id])
   end
 
   private
