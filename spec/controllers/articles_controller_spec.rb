@@ -30,7 +30,7 @@ describe ArticlesController do
 
     it "should paginate results" do
       create_list :article, 3
-      get :index, params: { page: 2, per_page: 1 }
+      get :index, params: { page: { number: 2, size: 1 } }
       expect(json_data.length).to eq 1
       expected_article = Article.recent.second.id.to_s
       expect(json_data.first["id"]).to eq(expected_article)
@@ -48,11 +48,11 @@ describe ArticlesController do
 
     it "should return proper json" do
       subject
-      expect(json_data["attributes"]).to eq({
-                                           "title" => article.title,
-                                           "content" => article.content,
-                                           "slug" => article.slug,
-                                         })
+      expect(json_data.first["attributes"]).to eq({
+                                                 "title" => article.title,
+                                                 "content" => article.content,
+                                                 "slug" => article.slug,
+                                               })
     end
   end
 end
