@@ -1,21 +1,28 @@
 class ApplicationController < ActionController::API
   rescue_from UserAuthenticator::AuthenticationError, with: :authentication_error
 
-  def render(options = {})
-    paginator = JSOM::Pagination::Paginator.new
+  def render_single(options = {})
+    render json: serializer.new(options[:json])
+  end
 
+  def render_collection(collection)
     if params[:page].present?
-      paginated = paginator.call(options[:json], params: { number: params[:page][:number], size: params[:page][:size] }, base_url: request.url)
+      paginated = paginator.call(collection, params: { number: params[:page][:number], size: params[:page][:size] }, base_url: request.url)
     else
-      paginated = paginator.call(options[:json], params: { number: 1, size: 25 }, base_url: request.url)
+      paginated = paginator.call(collection, params: params[:page], base_url: request.url)
     end
-    options = { meta: paginated.meta.to_h, links: paginated.links.to_h }
-    options[:json] = serializer.new(paginated.items, options)
-
-    super(options)
+    options = {
+      meta: paginated.meta.to_h,
+      links: paginated.links.to_h,
+    }
+    render json: serializer.new(paginated.items, options)
   end
 
   private
+
+  def paginator
+    JSOM::Pagination::Paginator.new
+  end
 
   def authentication_error
     error = {

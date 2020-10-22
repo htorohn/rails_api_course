@@ -1,11 +1,11 @@
 class ArticlesController < ApplicationController
   def index
     articles = Article.recent
-    render json: articles
+    render_collection articles
   end
 
   def show
-    render json: Article.find(params[:id])
+    render_single json: Article.find(params[:id])
   end
 
   private

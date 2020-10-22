@@ -48,11 +48,11 @@ describe ArticlesController do
 
     it "should return proper json" do
       subject
-      expect(json_data.first["attributes"]).to eq({
-                                                 "title" => article.title,
-                                                 "content" => article.content,
-                                                 "slug" => article.slug,
-                                               })
+      expect(json_data["attributes"]).to eq({
+                                           "title" => article.title,
+                                           "content" => article.content,
+                                           "slug" => article.slug,
+                                         })
     end
   end
 end
