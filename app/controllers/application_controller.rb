@@ -1,8 +1,13 @@
 class ApplicationController < ActionController::API
+  class AuthorizationError < StandardError; end
+
   rescue_from UserAuthenticator::AuthenticationError, with: :authentication_error
+  rescue_from AuthorizationError, with: :authorization_error
+
+  before_action :authorize!
 
   def render_single(options = {})
-    render json: serializer.new(options[:json])
+    render json: serializer.new(options[:json]), status: options[:status]
   end
 
   def render_collection(collection)
@@ -15,10 +20,26 @@ class ApplicationController < ActionController::API
       meta: paginated.meta.to_h,
       links: paginated.links.to_h,
     }
+
     render json: serializer.new(paginated.items, options)
   end
 
   private
+
+  def authorize!
+    raise AuthorizationError unless current_user
+  end
+
+  def access_token
+    provided_token = request.authorization&.gsub(/\ABearer\s/, "")
+    # the & operator reutrns null instead of raise error when the object is null
+    # the regex replace the string Bearer\s for empty string to leave just de token
+    @access_token = AccessToken.find_by(token: provided_token)
+  end
+
+  def current_user
+    @current_user = access_token&.user
+  end
 
   def paginator
     JSOM::Pagination::Paginator.new
@@ -32,5 +53,15 @@ class ApplicationController < ActionController::API
       "detail" => "You must provide valid code in order to exchange it for token.",
     }
     render json: { "errors": [error] }, status: 401
+  end
+
+  def authorization_error
+    error = {
+      "status" => "403",
+      "source" => { "pointer" => "/headers/authorization" },
+      "title" => "Not authorized",
+      "detail" => "You have no right to access this resource.",
+    }
+    render json: { "errors": [error] }, status: 403
   end
 end

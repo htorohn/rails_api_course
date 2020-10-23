@@ -1,4 +1,8 @@
 {
+    "ruby.codeCompletion": "rcodetools",
+    "ruby.format": "rufo",
+    "ruby.intellisense": "rubyLocate",
     "ruby.useBundler": true,
-    "ruby.useLanguageServer": true
+    "ruby.useLanguageServer": true,
+    "testExplorer.addToEditorContextMenu": true
 }
