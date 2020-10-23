@@ -11,14 +11,7 @@ class ArticlesController < ApplicationController
   end
 
   def create
-    article = Article.new(article_params)
-    if article.valid?
-      #we will figure that out
-    else
-      render json: article, adapter: :json_api,
-        serializer: ErrorSerializer,
-        status: :unprocessable_entity
-    end
+    Article.create!(article_params)
   end
 
   private

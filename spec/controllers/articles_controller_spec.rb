@@ -94,14 +94,20 @@ describe ArticlesController do
             {
               "source" => { "pointer" => "/data/attributes/title" },
               "detail" => "can't be blank",
+              "status" => 422,
+              "title" => "Invalid request",
             },
             {
               "source" => { "pointer" => "/data/attributes/content" },
               "detail" => "can't be blank",
+              "status" => 422,
+              "title" => "Invalid request",
             },
             {
               "source" => { "pointer" => "/data/attributes/slug" },
               "detail" => "can't be blank",
+              "status" => 422,
+              "title" => "Invalid request",
             }
           )
         end

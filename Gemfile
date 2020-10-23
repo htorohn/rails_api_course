@@ -15,6 +15,7 @@ gem "jsonapi-serializer"
 gem "jsom-pagination"
 gem "octokit", "~> 4.18"
 gem "jsom-pagination"
+gem "jsonapi_errors_handler", "~> 0.3.0"
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 # gem 'jbuilder', '~> 2.7'
 # Use Redis adapter to run Action Cable in production
