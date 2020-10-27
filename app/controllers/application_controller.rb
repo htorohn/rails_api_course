@@ -3,10 +3,12 @@ class ApplicationController < ActionController::API
 
   include JsonapiErrorsHandler
 
-  # ErrorMapper.map_errors!({
-  #   "ActiveRecord::RecordNotFound" => "JsonapiErrorsHandler::Errors::NotFound",
-  #   "ActiveRecord::ActiveRecord::RecordInvalid" => "JsonapiErrorsHandler::Errors::Invalid",
-  # })
+  ErrorMapper.map_errors!({
+    "ActiveRecord::RecordNotFound" => "JsonapiErrorsHandler::Errors::NotFound",
+    "ActiveRecord::ActiveRecord::RecordInvalid" => "JsonapiErrorsHandler::Errors::Invalid",
+    "UserAuthenticator::AuthenticationError" => "JsonapiErrorsHandler::Errors::Unauthorized",
+    "ApplicationController::AuthorizationError" => "JsonapiErrorsHandler::Errors::Forbidden"
+  })
   rescue_from ::StandardError, with: lambda { |e| handle_error(e) }
   rescue_from UserAuthenticator::AuthenticationError, with: lambda { |e| handle_error(e) }
   rescue_from AuthorizationError, with: lambda { |e| handle_error(e) }
