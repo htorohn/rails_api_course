@@ -1,45 +1,43 @@
 class ApplicationController < ActionController::API
   class AuthorizationError < StandardError; end
 
+  #siempre valida que sea un request autentico
+  before_action :authorize!
+  ##------------
+
   include JsonapiErrorsHandler
 
-  # ErrorMapper.map_errors!({
-  #   "ActiveRecord::RecordNotFound" => "JsonapiErrorsHandler::Errors::NotFound",
-  #   "ActiveRecord::ActiveRecord::RecordInvalid" => "JsonapiErrorsHandler::Errors::Invalid",
-  # })
+  ErrorMapper.map_errors!({
+    "ActiveRecord::RecordNotFound" => "JsonapiErrorsHandler::Errors::NotFound",
+    "ActiveRecord::ActiveRecord::RecordInvalid" => "JsonapiErrorsHandler::Errors::Invalid",
+    "ApplicationController::AuthorizationError" => "JsonapiErrorsHandler::Errors::Forbidden",
+    "UserAuthenticator::AuthenticationError" => "JsonapiErrorsHandler::Errors::Unauthorized",
+  })
   rescue_from ::StandardError, with: lambda { |e| handle_error(e) }
-  rescue_from UserAuthenticator::AuthenticationError, with: lambda { |e| handle_error(e) }
-  rescue_from AuthorizationError, with: lambda { |e| handle_error(e) }
   rescue_from ActiveRecord::RecordInvalid, with: lambda { |e| handle_validation_error(e) }
 
   def handle_validation_error(error)
-    pp error
     error_model = error.try(:model) || error.try(:record)
     mapped = JsonapiErrorsHandler::Errors::Invalid.new(errors: error_model.errors)
     render_error(mapped)
   end
 
-  # rescue_from UserAuthenticator::AuthenticationError, with: :authentication_error
-  # rescue_from AuthorizationError, with: :authorization_error
-
-  before_action :authorize!
-
   def render_single(options = {})
     render json: serializer.new(options[:json]), status: options[:status]
   end
 
-  def render_collection(collection)
+  def render_collection(options = {})
     if params[:page].present?
-      paginated = paginator.call(collection, params: { number: params[:page][:number], size: params[:page][:size] }, base_url: request.url)
+      paginated = paginator.call(options[:json], params: { number: params[:page][:number], size: params[:page][:size] }, base_url: request.url)
     else
-      paginated = paginator.call(collection, params: params[:page], base_url: request.url)
+      paginated = paginator.call(options[:json], params: params[:page], base_url: request.url)
     end
-    options = {
+    serializer_options = {
       meta: paginated.meta.to_h,
       links: paginated.links.to_h,
     }
 
-    render json: serializer.new(paginated.items, options)
+    render json: serializer.new(paginated.items, serializer_options), status: options[:status]
   end
 
   private
@@ -61,25 +59,5 @@ class ApplicationController < ActionController::API
 
   def paginator
     JSOM::Pagination::Paginator.new
-  end
-
-  def authentication_error
-    error = {
-      "status" => "401",
-      "source" => { "pointer" => "/code" },
-      "title" => "Authentication code is invalid",
-      "detail" => "You must provide valid code in order to exchange it for token.",
-    }
-    render json: { "errors": [error] }, status: 401
-  end
-
-  def authorization_error
-    error = {
-      "status" => "403",
-      "source" => { "pointer" => "/headers/authorization" },
-      "title" => "Not authorized",
-      "detail" => "You have no right to access this resource.",
-    }
-    render json: { "errors": [error] }, status: 403
   end
 end

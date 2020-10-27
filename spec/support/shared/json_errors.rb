@@ -3,10 +3,10 @@ require "rails_helper"
 shared_examples_for "unauthorized_requests" do
   let(:authentication_error) do
     {
-      "status" => "401",
-      "source" => { "pointer" => "/code" },
-      "title" => "Authentication code is invalid",
-      "detail" => "You must provide valid code in order to exchange it for token.",
+      "status" => 401,
+      "source" => { "pointer" => "/request/headers/authorization" },
+      "title" => "Unauthorized",
+      "detail" => "You need to login to authorize this request.",
     }
   end
 
@@ -20,13 +20,14 @@ shared_examples_for "unauthorized_requests" do
     expect(json["errors"]).to include(authentication_error)
   end
 end
+
 shared_examples_for "forbidden_requests" do
   let(:authorization_error) do
     {
-      "status" => "403",
-      "source" => { "pointer" => "/headers/authorization" },
-      "title" => "Not authorized",
-      "detail" => "You have no right to access this resource.",
+      "status" => 403,
+      "source" => { "pointer" => "/request/headers/authorization" },
+      "title" => "Forbidden request",
+      "detail" => "You have no rights to access this resource",
     }
   end
   it "shoud return 403 status code" do

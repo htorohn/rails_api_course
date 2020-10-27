@@ -2,8 +2,7 @@ class ArticlesController < ApplicationController
   skip_before_action :authorize!, only: %i[index show]
 
   def index
-    articles = Article.recent
-    render_collection articles
+    render_collection json: Article.recent
   end
 
   def show
@@ -11,12 +10,21 @@ class ArticlesController < ApplicationController
   end
 
   def create
-    Article.create!(article_params)
+    @article = Article.create!(article_params)
+    render_single json: @article, status: :created
+  end
+
+  def update
+    article = Article.find(params[:id])
+    article.update_attributes!(article_params)
+    render_single json: article, status: :ok
   end
 
   private
 
   def article_params
+    params.require(:data).require(:attributes).
+      permit(:title, :content, :slug) ||
     ActionController::Parameters.new
   end
 
